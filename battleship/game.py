@@ -76,7 +76,7 @@ class Board:
 
         return False
 
-    def is_win(self):
+    def is_won(self):
         if len(self.sunk_ships) == len(self.SHIPS):
             print('congratulations! you sunk my every ship')
             return True

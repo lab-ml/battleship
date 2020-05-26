@@ -24,7 +24,7 @@ def random_game():
 
     game = Board(inputs)
 
-    print(game.board)
+    game.print_board()
 
     for attempt, attack in enumerate(generate_random_attacks(range(10))):
         logger.log('attempt : ' + str(attempt), Color.cyan)
@@ -35,7 +35,7 @@ def random_game():
         if game.is_won():
             break
 
-    print(game.board)
+    game.print_board()
 
 
 if __name__ == '__main__':

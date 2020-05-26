@@ -60,7 +60,7 @@ class Board:
             logger.log('you missed my battleships!', Color.green)
         elif square == self.SHIP:
             self.board[num, let] = self.BOMBED
-            logger.log('you bombed my ship!', Color.blue)
+            logger.log('you bombed my ship!', Color.orange)
         else:
             raise ValueError('you guessed that one already')
 
@@ -84,6 +84,22 @@ class Board:
                 return True
 
         return False
+
+    def print_board(self):
+        from prettytable import PrettyTable
+
+        x = PrettyTable(hrules=True)
+        columns = [key for key in self.LETTERS]
+        columns.insert(0, '')
+
+        x.field_names = columns
+
+        for i, row in enumerate(self.board):
+            row = row.tolist()
+            row.insert(0, i)
+            x.add_row(row)
+
+        logger.log(x.get_string(), Color.blue)
 
     def is_won(self):
         if len(self.sunk_ships) == len(self.SHIPS):

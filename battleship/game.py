@@ -91,6 +91,7 @@ class Game:
 if __name__ == '__main__':
     inputs = {'destroyer': ('C', 2, 'r'), 'submarine': ('F', 3, 'c'), 'cruiser': ('B', 5, 'r'),
               'battleship': ('F', 6, 'c'), 'carrier': ('F', 1, 'r')}
+
     game = Board(inputs)
 
     print(game.board)

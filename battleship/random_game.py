@@ -9,7 +9,7 @@ from labml.logger import Color
 from battleship.board import Board
 
 
-def get_random_attacks(numbers: Union[List, range]):
+def generate_random_attacks(numbers: Union[List, range]):
     pairs = list(itertools.permutations(numbers, 2))
     pairs = pairs + ([(i, i) for i in numbers])
 
@@ -26,7 +26,7 @@ def random_game():
 
     print(game.board)
 
-    for attempt, attack in enumerate(get_random_attacks(range(10))):
+    for attempt, attack in enumerate(generate_random_attacks(range(10))):
         logger.log('attempt : ' + str(attempt), Color.cyan)
 
         game.play(attack[0], attack[1])

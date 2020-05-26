@@ -55,7 +55,7 @@ class Board:
         else:
             raise ValueError('you guessed that one already')
 
-    def is_bombed_ship(self):
+    def is_sunk_ship(self):
         for ship, (let, num, kind) in self.ships.items():
             if ship in self.sunk_ships:
                 continue

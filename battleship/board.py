@@ -88,18 +88,18 @@ class Board:
     def print_board(self):
         from prettytable import PrettyTable
 
-        x = PrettyTable(hrules=True)
+        board = PrettyTable(hrules=True)
         columns = [key for key in self.LETTERS]
         columns.insert(0, '')
 
-        x.field_names = columns
+        board.field_names = columns
 
         for i, row in enumerate(self.board):
             row = row.tolist()
             row.insert(0, i)
-            x.add_row(row)
+            board.add_row(row)
 
-        logger.log(x.get_string(), Color.blue)
+        logger.log(board.get_string(), Color.blue)
 
     def is_won(self):
         if len(self.sunk_ships) == len(self.SHIPS):

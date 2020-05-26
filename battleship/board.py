@@ -1,6 +1,12 @@
-from typing import Dict
+from typing import Dict, List, Union
 
 import torch
+
+import random
+import itertools
+
+from labml import logger
+from labml.logger import Text, Color
 
 
 class Board:
@@ -37,21 +43,27 @@ class Board:
             else:
                 self.board[num: num + size, let] = self.SHIP
 
-    def _validate(self, let: str, num: int):
-        assert let in self.LETTERS and 0 <= num <= 9
+    def _validate(self, let: Union[str, int], num: int):
+        if type(let) == str:
+            assert let in self.LETTERS
+            let = self.LETTERS[let]
+        else:
+            assert 0 <= let <= 9
 
-        return self.LETTERS[let], num
+        assert 0 <= num <= 9
 
-    def play(self, let: str, num: int):
+        return let, num
+
+    def play(self, let: Union[str, int], num: int):
         let, num = self._validate(let, num)
 
         square = self.board[num, let]
 
         if square == self.EMPTY:
-            print('you missed my battleships!')
+            logger.log('you missed my battleships!', Color.green)
         elif square == self.SHIP:
             self.board[num, let] = self.BOMBED
-            print('you bombed my ship!')
+            logger.log('you bombed my ship!', Color.blue)
         else:
             raise ValueError('you guessed that one already')
 
@@ -71,21 +83,26 @@ class Board:
 
             if ship_sum == size * self.BOMBED:
                 self.sunk_ships.append(ship)
-                print('congratulations! you sunk my {}'.format(ship))
+                logger.log('congratulations! you sunk my {}'.format(ship), Color.purple)
                 return True
 
         return False
 
     def is_won(self):
         if len(self.sunk_ships) == len(self.SHIPS):
-            print('congratulations! you sunk my every ship')
+            logger.log('congratulations! you sunk my every ship', Color.red)
             return True
 
         return False
 
 
-class Game:
-    pass
+def get_random_attacks(numbers: Union[List, range]):
+    pairs = list(itertools.permutations(numbers, 2))
+    pairs = pairs + ([(i, i) for i in numbers])
+
+    random.shuffle(pairs)
+
+    return pairs
 
 
 if __name__ == '__main__':
@@ -93,5 +110,16 @@ if __name__ == '__main__':
               'battleship': ('F', 6, 'c'), 'carrier': ('F', 1, 'r')}
 
     game = Board(inputs)
+
+    print(game.board)
+
+    for attempt, attack in enumerate(get_random_attacks(range(10))):
+        logger.log('attempt : ' + str(attempt), Color.cyan)
+
+        game.play(attack[0], attack[1])
+        game.is_sunk_ship()
+
+        if game.is_won():
+            break
 
     print(game.board)

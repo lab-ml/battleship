@@ -11,7 +11,7 @@ from battleship.board import Board
 
 def generate_random_attacks(numbers: Union[List, range]):
     pairs = list(itertools.permutations(numbers, 2))
-    pairs = pairs + ([(i, i) for i in numbers])
+    pairs += ([(i, i) for i in numbers])
 
     random.shuffle(pairs)
 

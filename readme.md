@@ -259,8 +259,3 @@ make random_game
 <span style="color: #208FFB">| 9 | 0 | 0 | 0 | 0 | 0 | 2 | 0 | 0 | 0 | 0 |</span>
 <span style="color: #208FFB">+---+---+---+---+---+---+---+---+---+---+---+</span></pre>
 
-
-
-```python
-
-```

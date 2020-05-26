@@ -1,7 +1,9 @@
+# Battleship 
 
+## try random game
 
-```python
-
+```properties
+make random_game
 ```
 
 

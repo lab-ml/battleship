@@ -6,6 +6,7 @@
 make random_game
 ```
 
+### output
 
 <pre><span style="color: #208FFB">+---+---+---+---+---+---+---+---+---+---+---+</span>
 <span style="color: #208FFB">|   | A | B | C | D | E | F | G | H | I | J |</span>

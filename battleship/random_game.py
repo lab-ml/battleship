@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Optional
 
 import random
 import itertools
@@ -9,13 +9,28 @@ from labml.logger import Color
 from battleship.board import Board
 
 
-def generate_random_attacks(numbers: Union[List, range]):
-    pairs = list(itertools.permutations(numbers, 2))
-    pairs += ([(i, i) for i in numbers])
+class RandomAgent:
+    STATE_SIZE = 10
 
-    random.shuffle(pairs)
+    def __init__(self):
+        self._iterator = -1
+        self.random_attacks = self.generate_random_attacks(range(self.STATE_SIZE))
 
-    return pairs
+    def get_action(self, state=None):
+        self._iterator += 1
+        return self.random_attacks[self._iterator]
+
+    def get_iterator(self):
+        return self._iterator
+
+    @staticmethod
+    def generate_random_attacks(numbers: Union[List, range]):
+        pairs = list(itertools.permutations(numbers, 2))
+        pairs += ([(i, i) for i in numbers])
+
+        random.shuffle(pairs)
+
+        return pairs
 
 
 def random_game():
@@ -26,14 +41,14 @@ def random_game():
 
     game.render_board()
 
-    for attempt, attack in enumerate(generate_random_attacks(range(10))):
-        logger.log('attempt : ' + str(attempt), Color.cyan)
+    agent = RandomAgent()
+    while not game.is_won():
+        r, c = agent.get_action()
 
-        game.play(attack[0], attack[1])
+        logger.log('attempt : ' + str(agent.get_iterator()), Color.cyan)
+
+        game.play(r, c)
         game.is_sunk_ship()
-
-        if game.is_won():
-            break
 
     game.render_board()
 

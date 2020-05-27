@@ -85,7 +85,7 @@ class Board:
 
         return False
 
-    def print_board(self):
+    def render_board(self):
         from prettytable import PrettyTable
 
         board = PrettyTable(hrules=True)

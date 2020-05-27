@@ -12,6 +12,7 @@ try random game
 output
 ~~~~~~
 
-.. image: https://github.com/lab-ml/battleship/blob/master/images/random_game.jpg
+.. image:: https://github.com/lab-ml/battleship/blob/master/images/random_game.jpg
    :width: 100%
-   :alt: Logger output
+   :alt: Dashboard Screenshot
+

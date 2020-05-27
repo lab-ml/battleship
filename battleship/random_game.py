@@ -14,11 +14,11 @@ class RandomAgent:
 
     def __init__(self):
         self._iterator = -1
-        self.random_attacks = self.generate_random_attacks(range(self.STATE_SIZE))
+        self._random_attacks = self.generate_random_attacks(range(self.STATE_SIZE))
 
     def get_action(self, state=None):
         self._iterator += 1
-        return self.random_attacks[self._iterator]
+        return self._random_attacks[self._iterator]
 
     def get_iterator(self):
         return self._iterator

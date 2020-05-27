@@ -13,6 +13,6 @@ output
 ~~~~~~
 
 .. image:: https://github.com/lab-ml/battleship/blob/master/images/random_game.jpg
-   :width: 50%
+   :width: 20%
    :alt: Dashboard Screenshot
 

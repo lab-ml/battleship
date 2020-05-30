@@ -18,18 +18,18 @@ def generate_ships(n_games: int):
             is_found = False
             while not is_found:
                 kind = KINDS[randint(0, 1)]
-
                 rand_nums = [random.choice(range(10 - size)), random.choice(range(10))]
+
                 if kind == ROW:
                     let, num = rand_nums[0], rand_nums[1]
-                    prop = board[num, let:let + size]
+                    propose = board[num, let:let + size]
                 else:
                     let, num = rand_nums[1], rand_nums[0]
-                    prop = board[num: num + size, let]
+                    propose = board[num: num + size, let]
 
-                if prop.sum() == 0:
+                if propose.sum() == 0:
                     is_found = True
-                    prop.fill_(1)
+                    propose.fill_(1)
 
         yield board
 

@@ -5,14 +5,10 @@ import torch
 from labml import logger
 from labml.logger import Color
 
-from battleship.consts import ROW, COLUMN, LETTERS, SHIPS, BOARD_SIZE
+from battleship.consts import ROW, COLUMN, LETTERS, SHIPS, BOARD_SIZE, EMPTY, BOMBED, SHIP
 
 
 class Board:
-    EMPTY: int = 0
-    SHIP: int = 1
-    BOMBED: int = 2
-
     def __init__(self, ships: Dict):
         self.board = torch.zeros(BOARD_SIZE, BOARD_SIZE, dtype=torch.int)
         self.ships = ships
@@ -31,9 +27,9 @@ class Board:
             size = SHIPS[ship]
 
             if kind == ROW:
-                self.board[num, let:let + size] = self.SHIP
+                self.board[num, let:let + size] = SHIP
             else:
-                self.board[num: num + size, let] = self.SHIP
+                self.board[num: num + size, let] = SHIP
 
     @staticmethod
     def _validate(let: Union[str, int], num: int):
@@ -52,10 +48,10 @@ class Board:
 
         square = self.board[num, let]
 
-        if square == self.EMPTY:
+        if square == EMPTY:
             logger.log('you missed my battleships!', Color.green)
-        elif square == self.SHIP:
-            self.board[num, let] = self.BOMBED
+        elif square == SHIP:
+            self.board[num, let] = BOMBED
             logger.log('you bombed my ship!', Color.orange)
         else:
             raise ValueError('you guessed that one already')
@@ -74,7 +70,7 @@ class Board:
             else:
                 ship_sum = self.board[num: num + size, let].sum()
 
-            if ship_sum == size * self.BOMBED:
+            if ship_sum == size * BOMBED:
                 self.sunk_ships.append(ship)
                 logger.log('congratulations! you sunk my {}'.format(ship), Color.purple)
                 return True

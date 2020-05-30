@@ -7,14 +7,13 @@ from labml import logger
 from labml.logger import Color
 
 from battleship.board import Board
+from battleship.consts import BOARD_SIZE
 
 
 class RandomAgent:
-    STATE_SIZE = 10
-
     def __init__(self):
         self._iterator = -1
-        self._random_attacks = self.generate_random_attacks(range(self.STATE_SIZE))
+        self._random_attacks = self.generate_random_attacks(range(BOARD_SIZE))
 
     def get_action(self, state=None):
         self._iterator += 1

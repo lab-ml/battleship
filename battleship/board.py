@@ -5,7 +5,7 @@ import torch
 from labml import logger
 from labml.logger import Color
 
-from battleship.consts import ROW, COLUMN, LETTERS, SHIPS
+from battleship.consts import ROW, COLUMN, LETTERS, SHIPS, BOARD_SIZE
 
 
 class Board:
@@ -14,7 +14,7 @@ class Board:
     BOMBED: int = 2
 
     def __init__(self, ships: Dict):
-        self.board = torch.zeros(10, 10, dtype=torch.int)
+        self.board = torch.zeros(BOARD_SIZE, BOARD_SIZE, dtype=torch.int)
         self.ships = ships
 
         self._initialize()

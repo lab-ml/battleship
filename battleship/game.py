@@ -35,7 +35,7 @@ def generate_ships(n_games: int):
 
 
 def test():
-    with monit.section("generate"):
+    with monit.section("generating"):
         for config in generate_ships(100000):
             if not config.sum() == 16:
                 raise ValueError

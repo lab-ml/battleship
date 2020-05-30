@@ -5,18 +5,13 @@ import torch
 from labml import logger
 from labml.logger import Color
 
+from battleship.consts import ROW, COLUMN, LETTERS, SHIPS
+
 
 class Board:
     EMPTY: int = 0
     SHIP: int = 1
     BOMBED: int = 2
-
-    ROW = 'r'
-    COLUMN = 'c'
-
-    LETTERS: Dict = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7, 'I': 8, 'J': 9}
-
-    SHIPS: Dict = {'destroyer': 2, 'submarine': 2, 'cruiser': 3, 'battleship': 4, 'carrier': 5}
 
     def __init__(self, ships: Dict):
         self.board = torch.zeros(10, 10, dtype=torch.int)
@@ -28,22 +23,23 @@ class Board:
 
     def _initialize(self):
         for ship, (let, num, kind) in self.ships.items():
-            assert ship in self.SHIPS
-            assert kind in [self.ROW, self.COLUMN]
+            assert ship in SHIPS
+            assert kind in [ROW, COLUMN]
 
             let, num = self._validate(let, num)
 
-            size = self.SHIPS[ship]
+            size = SHIPS[ship]
 
-            if kind == self.ROW:
+            if kind == ROW:
                 self.board[num, let:let + size] = self.SHIP
             else:
                 self.board[num: num + size, let] = self.SHIP
 
-    def _validate(self, let: Union[str, int], num: int):
+    @staticmethod
+    def _validate(let: Union[str, int], num: int):
         if type(let) == str:
-            assert let in self.LETTERS
-            let = self.LETTERS[let]
+            assert let in LETTERS
+            let = LETTERS[let]
         else:
             assert 0 <= let <= 9
 
@@ -71,9 +67,9 @@ class Board:
 
             let, num = self._validate(let, num)
 
-            size = self.SHIPS[ship]
+            size = SHIPS[ship]
 
-            if kind == self.ROW:
+            if kind == ROW:
                 ship_sum = self.board[num, let:let + size].sum()
             else:
                 ship_sum = self.board[num: num + size, let].sum()
@@ -89,7 +85,7 @@ class Board:
         from prettytable import PrettyTable
 
         board = PrettyTable(hrules=True)
-        columns = [key for key in self.LETTERS]
+        columns = [key for key in LETTERS]
         columns.insert(0, '')
 
         board.field_names = columns
@@ -102,7 +98,7 @@ class Board:
         logger.log(board.get_string(), Color.blue)
 
     def is_won(self):
-        if len(self.sunk_ships) == len(self.SHIPS):
+        if len(self.sunk_ships) == len(SHIPS):
             logger.log('congratulations! you sunk my every ship', Color.red)
             return True
 

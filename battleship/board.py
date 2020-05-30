@@ -1,4 +1,4 @@
-from typing import Dict, Union
+from typing import Union
 
 import torch
 
@@ -9,15 +9,17 @@ from battleship.consts import ROW, COLUMN, LETTERS, SHIPS, BOARD_SIZE, EMPTY, BO
 
 
 class Board:
-    def __init__(self, ships: Dict):
-        self.board = torch.zeros(BOARD_SIZE, BOARD_SIZE, dtype=torch.int)
+    def __init__(self, ships: Union[dict, torch.Tensor]):
         self.ships = ships
-
-        self._initialize()
-
         self.sunk_ships = []
 
-    def _initialize(self):
+        if type(self.ships) == dict:
+            self.board = self._generate_init_board()
+        else:
+            self.board = self.ships
+
+    def _generate_init_board(self):
+        board = torch.zeros(BOARD_SIZE, BOARD_SIZE, dtype=torch.int)
         for ship, (let, num, kind) in self.ships.items():
             assert ship in SHIPS
             assert kind in [ROW, COLUMN]
@@ -27,9 +29,11 @@ class Board:
             size = SHIPS[ship]
 
             if kind == ROW:
-                self.board[num, let:let + size] = SHIP
+                board[num, let:let + size] = SHIP
             else:
-                self.board[num: num + size, let] = SHIP
+                board[num: num + size, let] = SHIP
+
+        return board
 
     @staticmethod
     def _validate(let: Union[str, int], num: int):

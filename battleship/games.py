@@ -5,7 +5,7 @@ from random import randint
 
 from labml import monit
 
-from battleship.consts import ROW, COLUMN, SHIPS, BOARD_SIZE
+from battleship.consts import ROW, COLUMN, SHIPS, BOARD_SIZE, SHIP
 
 KINDS = [ROW, COLUMN]
 
@@ -29,7 +29,7 @@ def generate_games(n_games: int):
 
                 if propose.sum() == 0:
                     is_found = True
-                    propose.fill_(1)
+                    propose.fill_(SHIP)
 
         yield board
 

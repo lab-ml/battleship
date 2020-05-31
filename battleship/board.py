@@ -60,7 +60,7 @@ class Board:
             logger.log('you bombed my ship!', Color.orange)
             return SHIP
         else:
-            logger.log('you bombed my ship!', Color.orange)
+            logger.log('wrong attempt!', Color.orange)
             return BOMBED
 
     def is_sunk_ship(self):

@@ -54,11 +54,14 @@ class Board:
 
         if square == EMPTY:
             logger.log('you missed my battleships!', Color.green)
+            return EMPTY
         elif square == SHIP:
-            self.board[num, let] = BOMBED
+            square.fill_(BOMBED)
             logger.log('you bombed my ship!', Color.orange)
+            return SHIP
         else:
-            raise ValueError('you guessed that one already')
+            logger.log('you bombed my ship!', Color.orange)
+            return BOMBED
 
     def is_sunk_ship(self):
         for ship, (let, num, kind) in self.ships.items():

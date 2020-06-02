@@ -9,7 +9,8 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data
 
-from labml import tracker, experiment
+from labml import tracker, experiment, logger
+from labml.logger import Color
 from labml.helpers.pytorch.device import DeviceConfigs
 from labml.configs import option
 
@@ -112,25 +113,6 @@ class Configs(DeviceConfigs):
 
     games = generate_games(epochs)
 
-    def unravel_index(self, index, shape):
-        out = []
-        for dim in reversed(shape):
-            out.append(index % dim)
-            index = index // dim
-        return tuple(reversed(out))
-
-    def get_reward(self, res):
-        if res == WON:
-            return 10
-        elif res == SUNK_SHIP:
-            return 5
-        elif res == SHIP:
-            return 2
-        elif res == EMPTY:
-            return -2
-        else:
-            return -5
-
     def get_action(self, state):
         sample = random.random()
         eps_threshold = self.eps_end + (self.eps_start - self.eps_end) * math.exp(
@@ -179,7 +161,7 @@ class Configs(DeviceConfigs):
 
     def step(self, board: Board, action: int):
         done = False
-        num, let = self.unravel_index(action, [BOARD_SIZE, BOARD_SIZE])
+        num, let = unravel_index(action, [BOARD_SIZE, BOARD_SIZE])
 
         res = board.play(num, let)
 
@@ -190,7 +172,7 @@ class Configs(DeviceConfigs):
             res = WON
             done = True
 
-        reward = self.get_reward(res)
+        reward = get_reward(res)
         reward = torch.tensor([reward], device=self.device)
 
         next_state = board.get_board()
@@ -206,7 +188,9 @@ class Configs(DeviceConfigs):
 
             state = board.get_board()
 
-            for _ in count():
+            for iteration in count():
+                logger.log('epoch : {}, iteration : {}'.format(epoch, iteration), Color.cyan)
+
                 action = self.get_action(state)
                 next_state, reward, done = self.step(board, action.item())
 
@@ -253,6 +237,27 @@ def adam_optimizer(c: Configs):
 @option(Configs.memory)
 def memory():
     return ReplayMemory(10000)
+
+
+def unravel_index(index, shape):
+    out = []
+    for dim in reversed(shape):
+        out.append(index % dim)
+        index = index // dim
+    return tuple(reversed(out))
+
+
+def get_reward(res):
+    if res == WON:
+        return 10
+    elif res == SUNK_SHIP:
+        return 5
+    elif res == SHIP:
+        return 2
+    elif res == EMPTY:
+        return -2
+    else:
+        return -5
 
 
 def main():

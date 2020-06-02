@@ -10,7 +10,6 @@ import torch.optim as optim
 import torch.utils.data
 
 from labml import tracker, monit, experiment, lab
-from labml.helpers.training_loop import TrainingLoopConfigs
 from labml.helpers.pytorch.device import DeviceConfigs
 from labml.configs import option
 
@@ -44,7 +43,7 @@ class ReplayMemory(object):
 class DQN(nn.Module):
     def __init__(self, h: int = 10, w: int = 10, outputs: int = 100):
         super(DQN, self).__init__()
-        self.conv1 = nn.Conv2d(3, 16, kernel_size=5, stride=2)
+        self.conv1 = nn.Conv2d(1, 16, kernel_size=5, stride=2)
         self.bn1 = nn.BatchNorm2d(16)
         self.conv2 = nn.Conv2d(16, 32, kernel_size=5, stride=2)
         self.bn2 = nn.BatchNorm2d(32)
@@ -68,7 +67,7 @@ class DQN(nn.Module):
         return (size - (kernel_size - 1) - 1) // stride + 1
 
 
-class Configs(TrainingLoopConfigs, DeviceConfigs):
+class Configs(DeviceConfigs):
     epochs: int = 50
 
     is_save_models = True
@@ -106,16 +105,14 @@ class Configs(TrainingLoopConfigs, DeviceConfigs):
 
     games = generate_games(epochs)
 
-    @staticmethod
-    def unravel_index(index, shape):
+    def unravel_index(self, index, shape):
         out = []
         for dim in reversed(shape):
             out.append(index % dim)
             index = index // dim
         return tuple(reversed(out))
 
-    @staticmethod
-    def get_reward(res):
+    def get_reward(self, res):
         if res == WON:
             return 10
         elif res == SUNK_SHIP:
@@ -173,7 +170,7 @@ class Configs(TrainingLoopConfigs, DeviceConfigs):
 
         tracker.add_global_step()
 
-    def step(self, board: Board, action):
+    def step(self, board: Board, action: int):
         done = False
         num, let = self.unravel_index(action, [BOARD_SIZE, BOARD_SIZE])
 
@@ -197,8 +194,8 @@ class Configs(TrainingLoopConfigs, DeviceConfigs):
         pass
 
     def run(self):
-        for epoch, game in enumerate(self.games):
-            board = Board(game)
+        for epoch, (game, arrange) in enumerate(self.games):
+            board = Board(arrange)
 
             state = board.get_board()
 
@@ -206,7 +203,7 @@ class Configs(TrainingLoopConfigs, DeviceConfigs):
                 action = self.get_action(state)
                 next_state, reward, done = self.step(board, action.item())
 
-                memory.push(state, action, next_state, reward)
+                self.memory.push(state, action, next_state, reward)
 
                 state = next_state
 

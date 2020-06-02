@@ -14,6 +14,7 @@ def generate_games(n_games: int):
     for _ in range(n_games):
         board = torch.zeros(BOARD_SIZE, BOARD_SIZE, dtype=torch.int)
 
+        arrange = {}
         for ship, size in SHIPS.items():
             is_found = False
             while not is_found:
@@ -30,14 +31,15 @@ def generate_games(n_games: int):
                 if propose.sum() == 0:
                     is_found = True
                     propose.fill_(SHIP)
+                    arrange[ship] = (let, num, kind)
 
-        yield board
+        yield board, arrange
 
 
 def test():
     with monit.section("generating"):
-        for game, config in enumerate(generate_games(100000)):
-            if not config.sum() == 16:
+        for board, arrange in generate_games(100000):
+            if not board.sum() == 16:
                 raise ValueError
 
 

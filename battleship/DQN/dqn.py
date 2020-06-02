@@ -1,7 +1,6 @@
 import random
 import math
 
-from typing import List
 from collections import namedtuple
 from itertools import count
 
@@ -72,9 +71,6 @@ class DQN(nn.Module):
 class Configs(TrainingLoopConfigs, DeviceConfigs):
     epochs: int = 50
 
-    loop_step = 'loop_step'
-    loop_count = 'loop_count'
-
     is_save_models = True
     batch_size: int = 128
     test_batch_size: int = 128
@@ -107,12 +103,18 @@ class Configs(TrainingLoopConfigs, DeviceConfigs):
     n_actions = 100
 
     memory: ReplayMemory
-    episode_durations: List = []
 
     games = generate_games(epochs)
 
     @staticmethod
-    # TODO change board methods according to this scoring
+    def unravel_index(index, shape):
+        out = []
+        for dim in reversed(shape):
+            out.append(index % dim)
+            index = index // dim
+        return tuple(reversed(out))
+
+    @staticmethod
     def get_reward(res):
         if res == WON:
             return 10
@@ -130,21 +132,11 @@ class Configs(TrainingLoopConfigs, DeviceConfigs):
         eps_threshold = self.eps_end + (self.eps_start - self.eps_end) * math.exp(
             -1. * tracker.get_global_step() / self.eps_decay)
 
-        tracker.add_global_step()
-
         if sample > eps_threshold:
             with torch.no_grad():
                 return self.policy(state).max(1)[1].view(1, 1)
         else:
             return torch.tensor([[random.randrange(self.n_actions)]], device=self.device, dtype=torch.long)
-
-    @staticmethod
-    def unravel_index(index, shape):
-        out = []
-        for dim in reversed(shape):
-            out.append(index % dim)
-            index = index // dim
-        return tuple(reversed(out))
 
     def train(self):
         if len(self.memory) < self.batch_size:
@@ -179,12 +171,25 @@ class Configs(TrainingLoopConfigs, DeviceConfigs):
 
         self.optimizer.step()
 
+        tracker.add_global_step()
+
     def step(self, board: Board, action):
+        done = False
         num, let = self.unravel_index(action, [BOARD_SIZE, BOARD_SIZE])
 
         res = board.play(num, let)
 
+        if board.is_sunk_ship():
+            res = SUNK_SHIP
+
+        if board.is_won():
+            res = WON
+            done = True
+
+        reward = self.get_reward(res)
         reward = torch.tensor([reward], device=self.device)
+
+        next_state = board.get_board()
 
         return next_state, reward, done,
 
@@ -197,7 +202,7 @@ class Configs(TrainingLoopConfigs, DeviceConfigs):
 
             state = board.get_board()
 
-            for t in count():
+            for _ in count():
                 action = self.get_action(state)
                 next_state, reward, done = self.step(board, action.item())
 
@@ -208,8 +213,6 @@ class Configs(TrainingLoopConfigs, DeviceConfigs):
                 self.train()
 
                 if done:
-                    self.episode_durations.append(t + 1)
-                    plot_durations()
                     break
 
             if epoch % self.target_update == 0:

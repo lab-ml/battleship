@@ -9,12 +9,12 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data
 
-from labml import tracker, monit, experiment, lab
+from labml import tracker, experiment
 from labml.helpers.pytorch.device import DeviceConfigs
 from labml.configs import option
 
 from battleship.board import Board
-from battleship.consts import EMPTY, BOMBED, SHIP, WON, SUNK_SHIP, BOARD_SIZE
+from battleship.consts import EMPTY, SHIP, WON, SUNK_SHIP, BOARD_SIZE
 from battleship.games import generate_games
 
 Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward'))
@@ -44,11 +44,14 @@ class DQN(nn.Module):
     def __init__(self, h: int = 10, w: int = 10, outputs: int = 100):
         super(DQN, self).__init__()
 
-        self.conv1 = nn.Conv2d(1, 16, kernel_size=5, stride=2)
+        self.h = h
+        self.w = w
+
+        self.conv1 = nn.Conv2d(1, 16, kernel_size=2, stride=1)
         self.bn1 = nn.BatchNorm2d(16)
-        self.conv2 = nn.Conv2d(16, 32, kernel_size=5, stride=2)
+        self.conv2 = nn.Conv2d(16, 32, kernel_size=2, stride=1)
         self.bn2 = nn.BatchNorm2d(32)
-        self.conv3 = nn.Conv2d(32, 32, kernel_size=5, stride=2)
+        self.conv3 = nn.Conv2d(32, 32, kernel_size=2, stride=1)
         self.bn3 = nn.BatchNorm2d(32)
 
         convw = self.conv2d_size_out(self.conv2d_size_out(self.conv2d_size_out(w)))
@@ -58,6 +61,8 @@ class DQN(nn.Module):
         self.head = nn.Linear(linear_input_size, outputs)
 
     def forward(self, x):
+        x = x.view(-1, 1, self.h, self.w).float()
+
         x = F.relu(self.bn1(self.conv1(x)))
         x = F.relu(self.bn2(self.conv2(x)))
         x = F.relu(self.bn3(self.conv3(x)))
@@ -65,7 +70,7 @@ class DQN(nn.Module):
         return self.head(x.view(x.size(0), -1))
 
     @staticmethod
-    def conv2d_size_out(size, kernel_size=5, stride=2):
+    def conv2d_size_out(size, kernel_size=2, stride=1):
         return (size - (kernel_size - 1) - 1) // stride + 1
 
 

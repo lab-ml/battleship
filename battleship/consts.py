@@ -12,6 +12,8 @@ BOARD_SIZE = 10
 EMPTY: int = 0
 SHIP: int = 1
 BOMBED: int = 2
+WON: int = 3
+SUNK_SHIP: int = 4
 
 
 def num_to_let(num: int):

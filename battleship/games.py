@@ -36,7 +36,7 @@ def generate_games(n_games: int):
 
 def test():
     with monit.section("generating"):
-        for config in generate_games(100000):
+        for game, config in enumerate(generate_games(100000)):
             if not config.sum() == 16:
                 raise ValueError
 

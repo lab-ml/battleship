@@ -14,9 +14,9 @@ class Board:
         self.sunk_ships = []
 
         if type(self.ships) == dict:
-            self.board = self._generate_init_board()
+            self._board = self._generate_init_board()
         else:
-            self.board = self.ships
+            self._board = self.ships
 
     def _generate_init_board(self):
         board = torch.zeros(BOARD_SIZE, BOARD_SIZE, dtype=torch.int)
@@ -50,7 +50,7 @@ class Board:
     def play(self, let: Union[str, int], num: int):
         let, num = self._validate(let, num)
 
-        square = self.board[num, let]
+        square = self._board[num, let]
 
         if square == EMPTY:
             logger.log('you missed my battleships!', Color.green)
@@ -73,9 +73,9 @@ class Board:
             size = SHIPS[ship]
 
             if kind == ROW:
-                ship_sum = self.board[num, let:let + size].sum()
+                ship_sum = self._board[num, let:let + size].sum()
             else:
-                ship_sum = self.board[num: num + size, let].sum()
+                ship_sum = self._board[num: num + size, let].sum()
 
             if ship_sum == size * BOMBED:
                 self.sunk_ships.append(ship)
@@ -93,7 +93,7 @@ class Board:
 
         board.field_names = columns
 
-        for i, row in enumerate(self.board):
+        for i, row in enumerate(self._board):
             row = row.tolist()
             row.insert(0, i)
             board.add_row(row)
@@ -106,3 +106,6 @@ class Board:
             return True
 
         return False
+
+    def get_board(self):
+        return self._board

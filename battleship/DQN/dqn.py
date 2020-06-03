@@ -175,7 +175,7 @@ class Configs(DeviceConfigs):
         reward = get_reward(res)
         reward = torch.tensor([reward], device=self.device)
 
-        next_state = board.get_board()
+        next_state = board.get_current_board()
 
         return next_state, reward, done,
 
@@ -186,7 +186,7 @@ class Configs(DeviceConfigs):
         for epoch, (game, arrange) in enumerate(self.games):
             board = Board(arrange)
 
-            state = board.get_board()
+            state = board.get_current_board()
 
             for iteration in count():
                 logger.log('epoch : {}, iteration : {}'.format(epoch, iteration), Color.cyan)

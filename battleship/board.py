@@ -1,4 +1,5 @@
 from typing import Union
+from copy import deepcopy
 
 import torch
 
@@ -10,17 +11,19 @@ from battleship.consts import ROW, COLUMN, LETTERS, SHIPS, BOARD_SIZE, EMPTY, BO
 
 class Board:
     def __init__(self, ships: Union[dict, torch.Tensor]):
-        self.ships = ships
-        self.sunk_ships = []
+        self._ships = ships
+        self._sunk_ships = []
 
-        if type(self.ships) == dict:
+        if type(self._ships) == dict:
             self._board = self._generate_init_board()
         else:
-            self._board = self.ships
+            self._board = self._ships
+
+        self._init_board = deepcopy(self._board)
 
     def _generate_init_board(self):
         board = torch.zeros(BOARD_SIZE, BOARD_SIZE, dtype=torch.int)
-        for ship, (let, num, kind) in self.ships.items():
+        for ship, (let, num, kind) in self._ships.items():
             assert ship in SHIPS
             assert kind in [ROW, COLUMN]
 
@@ -53,6 +56,7 @@ class Board:
         square = self._board[num, let]
 
         if square == EMPTY:
+            square.fill_(BOMBED)
             logger.log('you missed my battleships!', Color.green)
             return EMPTY
         elif square == SHIP:
@@ -64,8 +68,8 @@ class Board:
             return BOMBED
 
     def is_sunk_ship(self):
-        for ship, (let, num, kind) in self.ships.items():
-            if ship in self.sunk_ships:
+        for ship, (let, num, kind) in self._ships.items():
+            if ship in self._sunk_ships:
                 continue
 
             let, num = self._validate(let, num)
@@ -78,9 +82,16 @@ class Board:
                 ship_sum = self._board[num: num + size, let].sum()
 
             if ship_sum == size * BOMBED:
-                self.sunk_ships.append(ship)
+                self._sunk_ships.append(ship)
                 logger.log('congratulations! you sunk my {}'.format(ship), Color.purple)
                 return True
+
+        return False
+
+    def is_won(self):
+        if len(self._sunk_ships) == len(SHIPS):
+            logger.log('congratulations! you sunk my every ship', Color.red)
+            return True
 
         return False
 
@@ -100,12 +111,8 @@ class Board:
 
         logger.log(board.get_string(), Color.blue)
 
-    def is_won(self):
-        if len(self.sunk_ships) == len(SHIPS):
-            logger.log('congratulations! you sunk my every ship', Color.red)
-            return True
-
-        return False
-
-    def get_board(self):
+    def get_current_board(self):
         return self._board
+
+    def get_initial_board(self):
+        return self._init_board

@@ -201,6 +201,8 @@ class Configs(DeviceConfigs):
                 self.train()
 
                 if done:
+                    tracker.add(iterations=iteration)
+                    tracker.save()
                     break
 
             if epoch % self.target_update == 0:

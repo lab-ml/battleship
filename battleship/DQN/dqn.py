@@ -268,15 +268,15 @@ def unravel_index(index, shape):
 
 def get_reward(res):
     if res == WON:
-        return 100
+        return BOARD_SIZE * BOARD_SIZE
     elif res == SUNK_SHIP:
-        return 50
+        return 2 * BOARD_SIZE
     elif res == SHIP:
-        return 25
+        return BOARD_SIZE
     elif res == EMPTY:
-        return -25
+        return -1
     else:
-        return -1000
+        return -2 * BOARD_SIZE
 
 
 def main():

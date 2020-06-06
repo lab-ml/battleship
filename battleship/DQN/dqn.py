@@ -76,11 +76,10 @@ class DQN(nn.Module):
 
 
 class Configs(DeviceConfigs):
-    epochs: int = 50
+    epochs: int = 1000
 
     is_save_models = True
-    batch_size: int = 128
-    test_batch_size: int = 128
+    training_batch_size: int = 64
 
     use_cuda: bool = True
     cuda_device: int = 0
@@ -125,23 +124,24 @@ class Configs(DeviceConfigs):
             return torch.tensor([[random.randrange(self.n_actions)]], device=self.device, dtype=torch.long)
 
     def train(self):
-        if len(self.memory) < self.batch_size:
+        if len(self.memory) < self.training_batch_size:
             return
 
-        transitions = self.memory.sample(self.batch_size)
+        transitions = self.memory.sample(self.training_batch_size)
+
         batch = Transition(*zip(*transitions))
 
         non_final_mask = torch.tensor(tuple(map(lambda s: s is not None, batch.next_state)), device=self.device,
                                       dtype=torch.bool)
-        non_final_next_states = torch.cat([s for s in batch.next_state if s is not None])
+        non_final_next_states = torch.tensor([[s.numpy()] for s in batch.next_state if s is not None])
 
-        state_batch = torch.cat(batch.state)
-        action_batch = torch.cat(batch.action)
-        reward_batch = torch.cat(batch.reward)
+        state_batch = torch.tensor([s.numpy() for s in batch.state])
+        action_batch = torch.tensor([a.numpy() for a in batch.action]).squeeze(1)
+        reward_batch = torch.tensor([r.numpy() for r in batch.action]).squeeze(1)
 
         state_action_values = self.policy(state_batch).gather(1, action_batch)
 
-        next_state_values = torch.zeros(self.batch_size, device=self.device)
+        next_state_values = torch.zeros(self.training_batch_size, device=self.device)
         next_state_values[non_final_mask] = self.target(non_final_next_states).max(1)[0].detach()
 
         expected_state_action_values = (next_state_values * self.gamma) + reward_batch
@@ -193,6 +193,9 @@ class Configs(DeviceConfigs):
 
                 action = self.get_action(state)
                 next_state, reward, done = self.step(board, action.item())
+
+                if done:
+                    next_state = None
 
                 self.memory.push(state, action, next_state, reward)
 
@@ -251,15 +254,15 @@ def unravel_index(index, shape):
 
 def get_reward(res):
     if res == WON:
-        return 10
+        return 100
     elif res == SUNK_SHIP:
-        return 5
+        return 50
     elif res == SHIP:
-        return 2
+        return 25
     elif res == EMPTY:
-        return -2
+        return -25
     else:
-        return -5
+        return -100
 
 
 def main():

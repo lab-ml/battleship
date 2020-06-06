@@ -61,7 +61,7 @@ class Board:
             return EMPTY
         elif square == SHIP:
             square.fill_(BOMBED)
-            logger.log('you bombed my ship!', Color.orange)
+            logger.log('you bombed my ship!', Color.red)
             return SHIP
         else:
             logger.log('wrong attempt!', Color.orange)

@@ -13,6 +13,7 @@ from labml import tracker, experiment, logger
 from labml.logger import Color
 from labml.helpers.pytorch.device import DeviceConfigs
 from labml.configs import option
+from labml.utils import pytorch as pytorch_utils
 
 from battleship.board import Board
 from battleship.consts import EMPTY, SHIP, WON, SUNK_SHIP, BOARD_SIZE
@@ -79,7 +80,7 @@ class Configs(DeviceConfigs):
     epochs: int = 1000
 
     is_save_models = True
-    training_batch_size: int = 64
+    training_batch_size: int = 16
 
     use_cuda: bool = True
     cuda_device: int = 0
@@ -101,8 +102,8 @@ class Configs(DeviceConfigs):
     gamma: int = 0.999
     eps_start: int = 0.9
     eps_end: int = 0.05
-    eps_decay: int = 200
-    target_update: int = 10
+    eps_decay: int = 750000
+    target_update: int = 5
 
     h: int = 10
     w: int = 10
@@ -112,10 +113,16 @@ class Configs(DeviceConfigs):
 
     games = generate_games(epochs)
 
+    action_steps = 0
+
     def get_action(self, state):
         sample = random.random()
         eps_threshold = self.eps_end + (self.eps_start - self.eps_end) * math.exp(
-            -1. * tracker.get_global_step() / self.eps_decay)
+            -1. * self.action_steps / self.eps_decay)
+
+        self.action_steps += 1
+
+        tracker.add(eps_threshold=eps_threshold)
 
         if sample > eps_threshold:
             with torch.no_grad():
@@ -157,6 +164,7 @@ class Configs(DeviceConfigs):
 
         self.optimizer.step()
 
+        tracker.add(train_loss=loss)
         tracker.add_global_step()
 
     def step(self, board: Board, action: int):
@@ -183,9 +191,12 @@ class Configs(DeviceConfigs):
         pass
 
     def run(self):
+        pytorch_utils.add_model_indicators(self.policy)
+
         for epoch, (game, arrange) in enumerate(self.games):
             board = Board(arrange)
 
+            # TODO change this
             state = board.get_current_board()
 
             for iteration in count():
@@ -210,6 +221,9 @@ class Configs(DeviceConfigs):
 
             if epoch % self.target_update == 0:
                 self.target.load_state_dict(self.policy.state_dict())
+
+            if self.is_log_parameters:
+                pytorch_utils.store_model_indicators(self.policy)
 
 
 @option(Configs.set_seed)
@@ -262,7 +276,7 @@ def get_reward(res):
     elif res == EMPTY:
         return -25
     else:
-        return -100
+        return -1000
 
 
 def main():

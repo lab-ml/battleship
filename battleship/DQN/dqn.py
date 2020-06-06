@@ -79,17 +79,17 @@ class DQN(nn.Module):
 class Configs(DeviceConfigs):
     epochs: int = 1000
 
-    is_save_models = True
     training_batch_size: int = 16
 
     use_cuda: bool = True
     cuda_device: int = 0
-    seed: int = 5
-    train_log_interval: int = 10
-
-    is_log_parameters: bool = True
-
     device: any
+
+    seed: int = 5
+    set_seed = 'set_seed'
+
+    is_save_models = True
+    is_log_parameters: bool = True
 
     policy: nn.Module
     target: nn.Module
@@ -97,12 +97,11 @@ class Configs(DeviceConfigs):
     learning_rate: float = 0.01
     optimizer: optim.Adam
 
-    set_seed = 'set_seed'
-
     gamma: int = 0.999
+
     eps_start: int = 0.9
     eps_end: int = 0.05
-    eps_decay: int = 750000
+    eps_decay: int = 100000
     target_update: int = 5
 
     h: int = 10
@@ -244,6 +243,7 @@ def target(c: Configs):
     m.to(c.device)
 
     m.load_state_dict(c.policy.state_dict())
+    m.eval()
 
     return m
 
@@ -291,7 +291,8 @@ def main():
 
     conf.run()
 
-    experiment.save_checkpoint()
+    if conf.is_save_models:
+        experiment.save_checkpoint()
 
 
 if __name__ == '__main__':
